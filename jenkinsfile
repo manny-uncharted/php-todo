@@ -26,5 +26,5 @@ pipeline {
                 sh 'php artisan key:generate'
             }
         }
-  }
+    }
 }
