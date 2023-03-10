@@ -66,14 +66,14 @@ pipeline {
                 script { 
                     def server = Artifactory.server 'artifactory-server'                 
                     def uploadSpec = """{
-                    "files": [
-                        {
-                            "pattern": "php-todo.zip",
-                        "target": "PBL/php-todo",
-                        "props": "type=zip;status=ready"
+                        "files": [
+                            {
+                                "pattern": "php-todo.zip",
+                                "target": "PBL/php-todo",
+                                "props": "type=zip;status=ready"
 
-                        }
-                    ]
+                            }
+                        ]
                     }""" 
 
                     server.upload spec: uploadSpec
@@ -84,6 +84,18 @@ pipeline {
         stage ('Deploy to Dev Environment') {
             steps {
                 build job: 'ansible-config-mgt/main', parameters: [[$class: 'StringParameterValue', name: 'env', value: 'dev']], propagate: false, wait: true
+            }
+        }
+
+        stage('SonarQube Quality Gate') {
+            environment {
+                scannerHome = tool 'SonarQubeScanner'
+            }
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    sh "${scannerHome}/bin/sonar-scanner"
+                }
+
             }
         }
     }
